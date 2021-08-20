@@ -1,11 +1,4 @@
-resource "aws_iam_role_policy" "lambda_policy" {
-  name = "lambda_policy"
-  role = aws_iam_role.lambda_role.id
 
-  # Terraform's "jsonencode" function converts a
-  # Terraform expression result to valid JSON syntax.
-  policy = file("/home/ismaeel/Documents/lambda_fucntions/iam/lambda-policy.json")
-}
 
 //////////////////// Create policy ////////////////////
 /////////////////////////////////////////////////////
