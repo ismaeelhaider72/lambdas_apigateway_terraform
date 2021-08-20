@@ -1,0 +1,7 @@
+############# how to setup the Jenkins pipleine #######################################
+
+> install nodejs in through manage plugin in tool configurations 
+> install pipeline plugin through manage plugin
+> make a new job 
+> configure the poll SCM
+> Configure the 
