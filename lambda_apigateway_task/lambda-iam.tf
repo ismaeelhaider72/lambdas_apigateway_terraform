@@ -62,11 +62,6 @@ resource "aws_iam_role_policy" "update_policy" {
 
 
 
-resource "aws_iam_role" "lambda_role" {
-  name = "lambda_role"
-
-  assume_role_policy =  file("iam/lambda-assume-policy.json")
-}
 
 //////////////////// Create Role ////////////////////
 /////////////////////////////////////////////////////
