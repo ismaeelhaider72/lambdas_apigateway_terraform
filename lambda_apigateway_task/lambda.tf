@@ -206,7 +206,7 @@ resource "aws_api_gateway_model" "postmodel1" {
 ////////////// request validator /////////////////
 
 resource "aws_api_gateway_request_validator" "validator" {
-  name                        = "validate_body"
+  name                        = "Validatebody"
   rest_api_id                 = aws_api_gateway_rest_api.api.id
   validate_request_body       = true
   validate_request_parameters = true
@@ -347,6 +347,9 @@ resource "aws_api_gateway_model" "deletemodel1" {
 /////////////////////////////////////////////////////////////////////////////////////
 
 resource "aws_api_gateway_method" "get_method" {
+  depends_on = [
+    aws_api_gateway_model.getmodel1
+  ]    
   rest_api_id   = aws_api_gateway_rest_api.api.id
   resource_id   = aws_api_gateway_resource.resource.id
   http_method   = "GET"
@@ -455,19 +458,29 @@ resource "aws_lambda_permission" "get_apigw_lambda_permission" {
 ////////////// Api Deployment stage //////////////////////
 
 resource "aws_api_gateway_deployment" "example" {
-  depends_on = [
-    aws_api_gateway_method.create_method2,
-    aws_api_gateway_method.update_method2,
-    aws_api_gateway_method.delete_method,
-    aws_api_gateway_method.get_method
 
-
-  ]  
   rest_api_id = aws_api_gateway_rest_api.api.id
 
   triggers = {
-    redeployment = sha1(jsonencode(aws_api_gateway_rest_api.api.body))
-  }
+    # NOTE: The configuration below will satisfy ordering considerations,
+    #       but not pick up all future REST API changes. More advanced patterns
+    #       are possible, such as using the filesha1() function against the
+    #       Terraform configuration file(s) or removing the .id references to
+    #       calculate a hash against whole resources. Be aware that using whole
+    #       resources will show a difference after the initial implementation.
+    #       It will stabilize to only change when resources change afterwards.
+    redeployment = sha1(jsonencode([
+      aws_api_gateway_resource.resource.id,
+      aws_api_gateway_method.create_method2,
+      aws_api_gateway_method.update_method2,
+      aws_api_gateway_method.delete_method,
+      aws_api_gateway_method.get_method,    
+      aws_api_gateway_integration.integration.id,
+      aws_api_gateway_integration.update_integration.id,
+      aws_api_gateway_integration.delete_integration.id,
+      aws_api_gateway_integration.get_integration.id
+    ]))
+  }  
 
   lifecycle {
     create_before_destroy = true
@@ -475,6 +488,7 @@ resource "aws_api_gateway_deployment" "example" {
 }
 
 resource "aws_api_gateway_stage" "example" {
+ 
   deployment_id = aws_api_gateway_deployment.example.id
   rest_api_id   = aws_api_gateway_rest_api.api.id
   stage_name    = "dev2"
